@@ -4,7 +4,6 @@ tmp/
 
 .DS_Store
 *.log
-pnpm-workspace.yaml
 
 .env
 .env.local
