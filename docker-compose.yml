@@ -1,0 +1,10 @@
+version: '3.8'
+
+services:
+  aoba-telegram-bot:
+    build: .
+    container_name: aoba-telegram-bot
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+      - AOBA_BOT_TOKEN=${AOBA_BOT_TOKEN}

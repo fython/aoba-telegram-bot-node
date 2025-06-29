@@ -1,0 +1,47 @@
+# 依赖
+node_modules
+npm-debug.log*
+pnpm-debug.log*
+
+# 构建输出
+dist
+build
+
+# 环境文件
+.env
+.env.local
+.env.*.local
+
+# 日志
+logs
+*.log
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+
+# 操作系统
+.DS_Store
+Thumbs.db
+
+# Git
+.git
+.gitignore
+
+# 其他
+*.md
+!README.md
+.eslintrc*
+.prettierrc*
+jest.config*
+*.test.ts
+*.test.js
+__tests__
+coverage
+
+# Docker
+Dockerfile*
+docker-compose*
+.dockerignore
