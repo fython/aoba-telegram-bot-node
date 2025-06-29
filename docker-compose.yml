@@ -6,6 +6,22 @@ services:
     environment:
       - NODE_ENV=production
       - AOBA_BOT_TOKEN=${AOBA_BOT_TOKEN}
+      - POSTGRES_HOST=postgres
+      - POSTGRES_DB=aoba
+      - POSTGRES_USER=aoba
+      - POSTGRES_PASSWORD=aobabot2025
+    depends_on:
+      - postgres
+  postgres:
+    image: postgres
+    container_name: postgres
+    restart: always
+    environment:
+      - POSTGRES_DB=aoba
+      - POSTGRES_USER=aoba
+      - POSTGRES_PASSWORD=aobabot2025
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
   watchtower:
     image: containrrr/watchtower
     container_name: watchtower
@@ -14,3 +30,5 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
       - $HOME/.docker/config.json:/config.json
     command: --interval 60 --cleanup "aoba-telegram-bot"
+volumes:
+  postgres-data:
