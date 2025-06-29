@@ -26,7 +26,10 @@ async function main(): Promise<void> {
 
   await initializeBot(bot);
 
-  bot.launch();
+  bot.launch({
+    // 忽略历史消息
+    dropPendingUpdates: true,
+  });
   bot.botInfo = await bot.telegram.getMe();
 
   logger.info('Aoba Bot is running...');
