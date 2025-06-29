@@ -1,0 +1,44 @@
+{
+  "name": "aoba-telegram-bot-node",
+  "version": "1.0.0",
+  "description": "",
+  "private": true,
+  "main": "src/index.ts",
+  "scripts": {
+    "start": "tsx src/index.ts",
+    "dev": "tsx watch src/index.ts",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix"
+  },
+  "keywords": [
+    "telegram",
+    "bot"
+  ],
+  "author": "Siubeng <fython@163.com>",
+  "license": "MIT",
+  "packageManager": "pnpm@10.11.0",
+  "devDependencies": {
+    "@eslint/js": "^9.30.0",
+    "@eslint/markdown": "^6.6.0",
+    "@tsconfig/node22": "^22.0.2",
+    "@types/node": "^22.15.34",
+    "@typescript-eslint/eslint-plugin": "^8.35.0",
+    "@typescript-eslint/parser": "^8.35.0",
+    "concurrently": "^9.2.0",
+    "eslint": "^9.30.0",
+    "eslint-config-prettier": "^10.1.5",
+    "eslint-plugin-prettier": "^5.5.1",
+    "globals": "^16.2.0",
+    "nodemon": "^3.1.10",
+    "prettier": "^3.6.2",
+    "tsx": "^4.20.3",
+    "typescript": "^5.8.3",
+    "typescript-eslint": "^8.35.0"
+  },
+  "dependencies": {
+    "dotenv": "^17.0.0",
+    "pino": "^9.7.0",
+    "pino-pretty": "^13.0.0",
+    "telegraf": "^4.16.3"
+  }
+}
