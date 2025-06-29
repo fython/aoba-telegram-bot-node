@@ -3,6 +3,7 @@
     "editorconfig.editorconfig",
     "dbaeumer.vscode-eslint",
     "esbenp.prettier-vscode",
-    "christian-kohler.npm-intellisense"
+    "christian-kohler.npm-intellisense",
+    "github.vscode-github-actions"
 	]
 }
