@@ -4,33 +4,45 @@ import { AobaContext } from './context';
 import { initializeBot } from './registry';
 import { logger } from './logger';
 import { formatUser } from './formatter/user';
+import { migrator } from './database';
 
 import './commands/help';
 import './commands/replace';
 import './features/userInteract';
+import './features/yulu';
+
+function prepareMiddleware(ctx: AobaContext, next: () => Promise<void>): Promise<void> {
+  if (ctx.from) {
+    ctx.userDisplay = formatUser(ctx.from);
+    ctx.logger = logger.child({ user: formatUser(ctx.from) });
+  }
+  return next();
+}
 
 async function main(): Promise<void> {
   const token = process.env.AOBA_BOT_TOKEN;
   if (!token) {
     throw new Error('AOBA_BOT_TOKEN is not set in the environment variables');
   }
+
+  logger.info('init db...');
+  await migrator.migrateToLatest();
+
   const bot = new Telegraf<AobaContext>(token);
   bot.context.logger = logger;
-  bot.use((ctx, next) => {
-    if (ctx.from) {
-      ctx.userDisplay = formatUser(ctx.from);
-      ctx.logger = logger.child({ user: formatUser(ctx.from) });
-    }
-    return next();
-  });
+  bot.botInfo = await bot.telegram.getMe();
+  bot.use(prepareMiddleware);
 
   await initializeBot(bot);
+  // default inline query after initialization
+  bot.on('inline_query', async (ctx) => {
+    await ctx.answerInlineQuery([], { cache_time: 10 });
+  });
 
   bot.launch({
     // 忽略历史消息
     dropPendingUpdates: true,
   });
-  bot.botInfo = await bot.telegram.getMe();
 
   logger.info('Aoba Bot is running...');
   logger.info('Bot info: %o', bot.botInfo);
