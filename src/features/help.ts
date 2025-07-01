@@ -11,11 +11,11 @@ onBotInit(async (bot) => {
       const commandName = ctx.args[0].toLowerCase();
       const cmd = cmds.find((c) => c.command === commandName);
       if (cmd) {
-        let response = escapeMD(`/${cmd.command} - ${cmd.shortDesc}`);
+        let response = `/${cmd.command} - ${cmd.shortDesc}`;
         if (cmd.longDesc) {
           response += `\n\n${cmd.longDesc}`;
         }
-        await ctx.reply(response, { parse_mode: 'MarkdownV2' });
+        await ctx.reply(response);
       } else {
         await ctx.reply(`未找到命令 /${commandName} 。请使用 /help 查看所有可用命令。`);
       }
@@ -28,9 +28,9 @@ onBotInit(async (bot) => {
       s += escapeMD(`/${cmd.command} - ${cmd.shortDesc}\n`);
     }
 
-    s += '\n了解命令更多详情可以使用 `/help <command_name>` 语法查询';
+    s += '\n了解命令更多详情可以使用 /help <command_name> 语法查询';
     s += `\n\n${getVersionMessageForBot()}`;
 
-    await ctx.reply(s, { parse_mode: 'MarkdownV2' });
+    await ctx.reply(s);
   });
 });

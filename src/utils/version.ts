@@ -61,20 +61,16 @@ export function getVersionString(): string {
   return shortHash;
 }
 
-export function getVersionMessageForBot(escape = true): string {
+export function getVersionMessageForBot(): string {
   const versionInfo = getVersionInfo();
   const shortHash = getShortCommitHash();
   let response = '';
   if (versionInfo.gitTag && versionInfo.gitTag !== 'no-tag' && versionInfo.gitTag !== 'unknown') {
-    response += `🏷️ 版本标签: ${escape ? escapeMD(versionInfo.gitTag) : versionInfo.gitTag}\n`;
+    response += `🏷️ 版本标签: ${versionInfo.gitTag}\n`;
   }
 
   if (versionInfo.gitCommitMessage && versionInfo.gitCommitMessage !== 'unknown') {
-    let line = `💬 最后提交: (\`${shortHash}\`) ${versionInfo.gitCommitMessage}\n`;
-    if (escape) {
-      line = escapeMD(line);
-    }
-    response += line;
+    response += `💬 最后提交: (${shortHash}) ${versionInfo.gitCommitMessage}\n`;
   }
 
   if (versionInfo.buildDate && versionInfo.buildDate !== 'unknown') {
