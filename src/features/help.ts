@@ -1,5 +1,4 @@
 import { getBotCommands, onBotInit } from '../registry';
-import { escapeMD } from '../utils/markdown';
 import { getVersionMessageForBot } from '../utils/version';
 
 onBotInit(async (bot) => {
@@ -25,7 +24,7 @@ onBotInit(async (bot) => {
     let s = 'Aoba Bot 支持的命令:\n\n';
 
     for (const cmd of cmds) {
-      s += escapeMD(`/${cmd.command} - ${cmd.shortDesc}\n`);
+      s += `/${cmd.command} - ${cmd.shortDesc}\n`;
     }
 
     s += '\n了解命令更多详情可以使用 /help <command_name> 语法查询';
