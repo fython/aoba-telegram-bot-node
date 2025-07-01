@@ -99,6 +99,46 @@ registerCommand({
   },
 });
 
+registerCommand({
+  command: 'yulu_del',
+  shortDesc: '删除指定 ID 的语录',
+  longDesc: '删除指定 ID 的语录，仅限语录相关人员（被记录人 或 记录人）可以操作',
+  handler: async (ctx) => {
+    const text = ctx.message?.text || '';
+    const parts = text.split(' ').filter((p) => p.length > 0);
+    if (parts.length < 2) {
+      ctx.reply('请提供要删除的语录 ID');
+      return;
+    }
+    const recordId = parseInt(parts[1], 10);
+    if (isNaN(recordId)) {
+      ctx.reply('无效的语录 ID');
+      return;
+    }
+
+    const record = await db
+      .selectFrom('yulu_record')
+      .where('id', '=', recordId)
+      .selectAll()
+      .executeTakeFirst();
+
+    if (!record) {
+      ctx.reply('找不到指定 ID 的语录');
+      return;
+    }
+
+    const userId = ctx.from.id;
+    if (record.author_user_id !== userId && record.submitter_user_id !== userId) {
+      ctx.reply('你没有权限删除这条语录');
+      return;
+    }
+
+    await db.deleteFrom('yulu_record').where('id', '=', recordId).execute();
+
+    ctx.reply(`已删除语录 ID=${recordId}`);
+  },
+});
+
 const PAGE_SIZE = 5;
 
 async function buildYuluListPage(targetUsername: string, page: number) {
@@ -130,7 +170,7 @@ async function buildYuluListPage(targetUsername: string, page: number) {
 
   const messageText = [
     `@${targetUsername} 的语录 (第 ${page}/${totalPages} 页):`,
-    ...records.map((r, i) => `${(page - 1) * PAGE_SIZE + i + 1}. ${r.content}`),
+    ...records.map((r) => `${r.id}. ${r.content}`),
   ].join('\n');
 
   const buttons = [];
