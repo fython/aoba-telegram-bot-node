@@ -1,7 +1,8 @@
-import { InlineQueryResult, Message } from 'telegraf/types';
-import { registerCommand, registerInlineQueryHandler } from '../registry';
+import { CallbackQuery, InlineQueryResult, Message } from 'telegraf/types';
+import { registerCommand, registerInlineQueryHandler, onBotInit } from '../registry';
 import { db } from '../database';
 import { sql } from 'kysely';
+import { callbackQuery } from 'telegraf/filters';
 
 registerInlineQueryHandler(async (ctx, next) => {
   ctx.logger = ctx.logger.child({ feature: 'yulu' });
@@ -50,6 +51,17 @@ registerCommand({
       return;
     }
     const author = replyMsg.from.username || replyMsg.from.id.toString();
+    // 检查是否已经录入过
+    const existingRecord = await db
+      .selectFrom('yulu_record')
+      .where('content', '=', content)
+      .where('author_username', '=', author)
+      .selectAll()
+      .executeTakeFirst();
+    if (existingRecord) {
+      ctx.reply(`@${author} 的语录已经存在这条内容`);
+      return;
+    }
     await db
       .insertInto('yulu_record')
       .values({
@@ -62,4 +74,111 @@ registerCommand({
       .execute();
     ctx.reply(`已录入 @${author} 的语录`);
   },
+});
+
+registerCommand({
+  command: 'yulu_list',
+  shortDesc: '查看我的语录列表',
+  longDesc: '查看我被录入的语录列表，后面追加 `@username` 可以查看指定用户的语录列表',
+  handler: async (ctx) => {
+    const text = ctx.message?.text || '';
+    const parts = text.split(' ').filter((p) => p.length > 0);
+    let targetUsername: string;
+    if (parts.length > 1 && parts[1].startsWith('@')) {
+      targetUsername = parts[1].slice(1);
+    } else {
+      targetUsername = ctx.from.username || ctx.from.id.toString();
+    }
+
+    const page = 1;
+    const { text: messageText, keyboard } = await buildYuluListPage(targetUsername, page);
+
+    ctx.reply(messageText, {
+      reply_markup: keyboard,
+    });
+  },
+});
+
+const PAGE_SIZE = 5;
+
+async function buildYuluListPage(targetUsername: string, page: number) {
+  const records = await db
+    .selectFrom('yulu_record')
+    .where('author_username', '=', targetUsername)
+    .selectAll()
+    .orderBy('id', 'asc')
+    .offset((page - 1) * PAGE_SIZE)
+    .limit(PAGE_SIZE)
+    .execute();
+
+  const totalCountResult = await db
+    .selectFrom('yulu_record')
+    .where('author_username', '=', targetUsername)
+    .select(db.fn.count('id').as('count'))
+    .executeTakeFirst();
+
+  const totalCount = Number(totalCountResult?.count) || 0;
+
+  if (totalCount === 0) {
+    return {
+      text: `没有找到 @${targetUsername} 的语录`,
+      keyboard: undefined,
+    };
+  }
+
+  const totalPages = Math.ceil(totalCount / PAGE_SIZE);
+
+  const messageText = [
+    `@${targetUsername} 的语录 (第 ${page}/${totalPages} 页):`,
+    ...records.map((r, i) => `${(page - 1) * PAGE_SIZE + i + 1}. ${r.content}`),
+  ].join('\n');
+
+  const buttons = [];
+  if (page > 1) {
+    buttons.push({
+      text: '上一页',
+      callback_data: `yulu_list:${targetUsername}:${page - 1}`,
+    });
+  }
+  if (page < totalPages) {
+    buttons.push({
+      text: '下一页',
+      callback_data: `yulu_list:${targetUsername}:${page + 1}`,
+    });
+  }
+
+  const keyboard = buttons.length > 0 ? { inline_keyboard: [buttons] } : undefined;
+
+  return {
+    text: messageText,
+    keyboard,
+  };
+}
+
+onBotInit(async (bot) => {
+  bot.on(callbackQuery(), async (ctx, next) => {
+    const query = ctx.callbackQuery as CallbackQuery.DataQuery | undefined;
+    const matches = query?.data?.match(/^yulu_list:([^:]+):(\d+)$/);
+    if (!matches) {
+      return next();
+    }
+    const targetUsername = matches[1];
+    const page = parseInt(matches[2], 10);
+
+    if (page < 1) {
+      ctx.answerCbQuery('已经是第一页了');
+      return;
+    }
+
+    const { text, keyboard } = await buildYuluListPage(targetUsername, page);
+
+    try {
+      await ctx.editMessageText(text, {
+        reply_markup: keyboard,
+      });
+    } catch (e) {
+      ctx.logger.error('failed to edit message text: %o', e);
+    }
+    ctx.answerCbQuery();
+  });
 });

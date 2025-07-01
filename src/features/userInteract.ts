@@ -17,6 +17,9 @@ export const init = () =>
         return next();
       }
       const action = text.split(' ')[0].slice(1);
+      if (action.includes('@')) {
+        return next();
+      }
       const actor = userLink(ctx.from);
       const target = userLink(replyFrom);
       let suffix = text.split(' ').slice(1).join(' ').trim();
