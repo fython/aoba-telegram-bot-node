@@ -19,23 +19,19 @@ registerInlineQueryHandler(async (ctx, next) => {
     .where(sql.id('author_username'), '=', key)
     .selectAll()
     .execute();
-  ctx.logger.debug('key: %s records: %o', key, records);
   if (records.length === 0) {
     ctx.answerInlineQuery([], { cache_time: 0 });
     return;
   }
-  const results: InlineQueryResult[] = records.map((r) => {
-    const respond = fmt`${code`@${key}`}: ${r.content}`;
-    return {
-      type: 'article',
-      id: `yulu_${key}_${r.id}`,
-      title: r.content,
-      input_message_content: {
-        message_text: respond.text,
-        parse_mode: respond.parse_mode,
-      },
-    };
-  });
+  const results: InlineQueryResult[] = records.map((r) => ({
+    type: 'article',
+    id: `yulu_${key}_${r.id}`,
+    title: r.content,
+    input_message_content: {
+      message_text: `\`@${key}\`: ${r.content}`,
+      parse_mode: 'MarkdownV2',
+    },
+  }));
   ctx.answerInlineQuery(results, {
     cache_time: 0,
   });
