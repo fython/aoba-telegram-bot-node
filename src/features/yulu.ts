@@ -3,6 +3,8 @@ import { registerCommand, registerInlineQueryHandler, onBotInit } from '../regis
 import { db } from '../database';
 import { sql } from 'kysely';
 import { callbackQuery } from 'telegraf/filters';
+import { code, fmt } from 'telegraf/format';
+import { extraReplyToCurrent } from '../utils';
 
 registerInlineQueryHandler(async (ctx, next) => {
   ctx.logger = ctx.logger.child({ feature: 'yulu' });
@@ -72,7 +74,7 @@ registerCommand({
         submitter_user_id: ctx.from.id,
       })
       .execute();
-    ctx.reply(`已录入 @${author} 的语录`);
+    ctx.reply(fmt`已录入 ${code`@${author}`} 的语录`, extraReplyToCurrent(ctx));
   },
 });
 
