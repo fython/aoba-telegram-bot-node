@@ -24,11 +24,11 @@ onBotInit(async (bot) => {
     let s = 'Aoba Bot 支持的命令:\n\n';
 
     for (const cmd of cmds) {
-      s += `/${cmd.command} - ${cmd.shortDesc}\n`;
+      s += `/${cmd.command} \\- ${cmd.shortDesc}\n`;
     }
 
     s += '\n了解命令更多详情可以使用 `/help <command_name>` 语法查询';
-    s += `\n\n${getVersionMessageForBot()}`;
+    s += `\n\n${getVersionMessageForBot().replaceAll('(', '\\(').replaceAll(')', '\\)')}`;
 
     await ctx.reply(s, { parse_mode: 'MarkdownV2' });
   });
