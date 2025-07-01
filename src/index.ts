@@ -6,6 +6,7 @@ import { logger } from './logger';
 import { formatUser } from './formatter/user';
 import { migrator } from './database';
 
+import './features/choose';
 import './features/help';
 import './features/replace';
 import './features/userInteract';
