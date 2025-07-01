@@ -2,17 +2,28 @@
 
 Aoba Telegram Bot in Node.js (TypeScript)
 
-## Feature
+## 功能特性
 
 See [docs/features](docs/features/) folders
 
-## Install & Deploy
+## 安装 & 部署
 
 TODO
 
-## Development
+## 开发
 
-TODO
+### 开发环境
+
+基本要求：
+
+- Git
+- Node.js 22+ (LTS) & pnpm
+- IDE what you like
+- 可以连接上 Telegram 服务的网路环境
+
+### Vibe Coding
+
+See [Vibe Coding](docs/vibe_coding.md)
 
 ## Author
 
