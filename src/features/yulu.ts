@@ -24,14 +24,18 @@ registerInlineQueryHandler(async (ctx, next) => {
     ctx.answerInlineQuery([], { cache_time: 0 });
     return;
   }
-  const results: InlineQueryResult[] = records.map((r) => ({
-    type: 'article',
-    id: `yulu_${key}_${r.id}`,
-    title: r.content,
-    input_message_content: {
-      message_text: `@${key}: ${r.content}`,
-    },
-  }));
+  const results: InlineQueryResult[] = records.map((r) => {
+    const respond = fmt`${code`@${key}`}: ${r.content}`;
+    return {
+      type: 'article',
+      id: `yulu_${key}_${r.id}`,
+      title: r.content,
+      input_message_content: {
+        message_text: respond.text,
+        parse_mode: respond.parse_mode,
+      },
+    };
+  });
   ctx.answerInlineQuery(results, {
     cache_time: 0,
   });
