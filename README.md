@@ -4,7 +4,7 @@ Aoba Telegram Bot in Node.js (TypeScript)
 
 ## Feature
 
-TODO
+See [docs/features](docs/features/) folders
 
 ## Install & Deploy
 

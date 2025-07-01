@@ -6,8 +6,8 @@ import { logger } from './logger';
 import { formatUser } from './formatter/user';
 import { migrator } from './database';
 
-import './commands/help';
-import './commands/replace';
+import './features/help';
+import './features/replace';
 import './features/userInteract';
 import './features/yulu';
 

@@ -3,6 +3,11 @@ name: Docker Image CI
 on:
   push:
     branches: ['main']
+    paths-ignore:
+      - 'docs/**'
+      - 'tests/**'
+      - 'README.md'
+      - '.env*'
 
 jobs:
   build:
