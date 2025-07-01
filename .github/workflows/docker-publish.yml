@@ -8,6 +8,8 @@ on:
       - 'tests/**'
       - 'README.md'
       - '.env*'
+  pull_request:
+    branches: ['main']
 
 jobs:
   build:
@@ -15,6 +17,33 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # 获取完整的 git 历史，用于获取标签信息
+
+      - name: Get Git information
+        id: git-info
+        run: |
+          # 获取 commit hash
+          GIT_COMMIT_HASH=$(git rev-parse HEAD)
+          echo "commit-hash=${GIT_COMMIT_HASH}" >> $GITHUB_OUTPUT
+
+          # 获取 tag（如果存在）
+          GIT_TAG=$(git describe --tags --exact-match 2>/dev/null || echo "no-tag")
+          echo "tag=${GIT_TAG}" >> $GITHUB_OUTPUT
+
+          # 获取 commit message
+          GIT_COMMIT_MESSAGE=$(git log -1 --pretty=format:"%s")
+          echo "commit-message=${GIT_COMMIT_MESSAGE}" >> $GITHUB_OUTPUT
+
+          # 获取构建时间
+          BUILD_DATE=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+          echo "build-date=${BUILD_DATE}" >> $GITHUB_OUTPUT
+
+          # 输出信息用于调试
+          echo "Git Commit Hash: ${GIT_COMMIT_HASH}"
+          echo "Git Tag: ${GIT_TAG}"
+          echo "Git Commit Message: ${GIT_COMMIT_MESSAGE}"
+          echo "Build Date: ${BUILD_DATE}"
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -26,11 +55,28 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository_owner }}/aoba-telegram-bot-node
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=raw,value=latest,enable={{is_default_branch}}
+            type=raw,value=${{ steps.git-info.outputs.tag }},enable=${{ steps.git-info.outputs.tag != 'no-tag' }}
+
       - name: Build and push Docker image
         uses: docker/build-push-action@v6
         with:
           context: .
           push: true
-          tags: ghcr.io/${{ github.repository_owner }}/aoba-telegram-bot-node:latest
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          build-args: |
+            GIT_COMMIT_HASH=${{ steps.git-info.outputs.commit-hash }}
+            GIT_TAG=${{ steps.git-info.outputs.tag }}
+            GIT_COMMIT_MESSAGE=${{ steps.git-info.outputs.commit-message }}
+            BUILD_DATE=${{ steps.git-info.outputs.build-date }}
           cache-from: type=gha
           cache-to: type=gha,mode=max

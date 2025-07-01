@@ -1,6 +1,12 @@
 services:
   aoba-telegram-bot:
-    build: .
+    build:
+      context: .
+      args:
+        GIT_COMMIT_HASH: ${GIT_COMMIT_HASH:-unknown}
+        GIT_TAG: ${GIT_TAG:-no-tag}
+        GIT_COMMIT_MESSAGE: ${GIT_COMMIT_MESSAGE:-unknown}
+        BUILD_DATE: ${BUILD_DATE:-unknown}
     container_name: aoba-telegram-bot
     restart: always
     environment:

@@ -1,4 +1,5 @@
 import { getBotCommands, onBotInit } from '../registry';
+import { getVersionMessageForBot } from '../utils/version';
 
 onBotInit(async (bot) => {
   bot.command('help', async (ctx) => {
@@ -26,7 +27,8 @@ onBotInit(async (bot) => {
       s += `/${cmd.command} - ${cmd.shortDesc}\n`;
     }
 
-    s += '\n了解命令更多详情可以使用 /help <command_name> 语法查询';
+    s += '\n了解命令更多详情可以使用 `/help <command_name>` 语法查询';
+    s += `\n\n${getVersionMessageForBot()}`;
 
     await ctx.reply(s);
   });

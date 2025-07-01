@@ -10,6 +10,7 @@ import './features/choose';
 import './features/help';
 import './features/replace';
 import './features/userInteract';
+import './features/version';
 import './features/yulu';
 
 function prepareMiddleware(ctx: AobaContext, next: () => Promise<void>): Promise<void> {
