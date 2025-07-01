@@ -1,5 +1,6 @@
 import { readFileSync } from 'fs';
 import { join } from 'path';
+import { escapeMD } from './markdown';
 
 export interface VersionInfo {
   gitCommitHash: string;
@@ -60,21 +61,25 @@ export function getVersionString(): string {
   return shortHash;
 }
 
-export function getVersionMessageForBot(): string {
+export function getVersionMessageForBot(escape = true): string {
   const versionInfo = getVersionInfo();
   const shortHash = getShortCommitHash();
   let response = '';
   if (versionInfo.gitTag && versionInfo.gitTag !== 'no-tag' && versionInfo.gitTag !== 'unknown') {
-    response += `🏷️ **版本标签**: ${versionInfo.gitTag}\n`;
+    response += `🏷️ 版本标签: ${escape ? escapeMD(versionInfo.gitTag) : versionInfo.gitTag}\n`;
   }
 
   if (versionInfo.gitCommitMessage && versionInfo.gitCommitMessage !== 'unknown') {
-    response += `💬 **最后提交**: (\`${shortHash}\`) ${versionInfo.gitCommitMessage}\n`;
+    let line = `💬 最后提交: (\`${shortHash}\`) ${versionInfo.gitCommitMessage}\n`;
+    if (escape) {
+      line = escapeMD(line);
+    }
+    response += line;
   }
 
   if (versionInfo.buildDate && versionInfo.buildDate !== 'unknown') {
     const buildDate = new Date(versionInfo.buildDate);
-    response += `📅 **构建时间**: ${buildDate.toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai' })}\n`;
+    response += `📅 构建时间: ${buildDate.toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai' })}\n`;
   }
   return response;
 }
