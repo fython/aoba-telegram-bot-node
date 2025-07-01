@@ -30,6 +30,6 @@ onBotInit(async (bot) => {
     s += '\n了解命令更多详情可以使用 `/help <command_name>` 语法查询';
     s += `\n\n${getVersionMessageForBot()}`;
 
-    await ctx.reply(s);
+    await ctx.reply(s, { parse_mode: 'MarkdownV2' });
   });
 });
