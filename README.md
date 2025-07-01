@@ -28,3 +28,7 @@ See [Vibe Coding](docs/vibe_coding.md)
 ## Author
 
 Siubeng <fython@163.com>
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.

@@ -1,8 +1,7 @@
 {
   "name": "aoba-telegram-bot-node",
   "version": "1.0.0",
-  "description": "",
-  "private": true,
+  "description": "Aoba Telegram Bot in Node.js (TypeScript)",
   "main": "src/index.ts",
   "scripts": {
     "start": "tsx src/index.ts",
