@@ -6,7 +6,7 @@ import { createHash } from 'crypto';
 import { logger } from '../logger';
 
 // 配置常量
-const REPEAT_TIME_WINDOW = 5 * 60 * 1000; // 5分钟内的重复消息有效
+const REPEAT_TIME_WINDOW = 2 * 60 * 1000; // 5分钟内的重复消息有效
 const COOLDOWN_TIME = 10 * 60 * 1000; // 10分钟冷却时间
 const CLEANUP_INTERVAL = 30 * 60 * 1000; // 30分钟清理一次过期记录
 const MIN_MESSAGE_LENGTH = 2; // 最短消息长度
