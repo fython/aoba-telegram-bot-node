@@ -12,6 +12,7 @@ import './features/replace';
 import './features/userInteract';
 import './features/version';
 import './features/yulu';
+import './features/ids';
 
 function prepareMiddleware(ctx: AobaContext, next: () => Promise<void>): Promise<void> {
   if (ctx.from) {
