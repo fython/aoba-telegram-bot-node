@@ -1,6 +1,5 @@
 import { readFileSync } from 'fs';
 import { join } from 'path';
-import { escapeMD } from './markdown';
 
 export interface VersionInfo {
   gitCommitHash: string;
