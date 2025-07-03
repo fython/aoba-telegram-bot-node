@@ -8,6 +8,7 @@ import { migrator } from './database';
 
 import './features/choose';
 import './features/help';
+import './features/repeat';
 import './features/replace';
 import './features/userInteract';
 import './features/version';
