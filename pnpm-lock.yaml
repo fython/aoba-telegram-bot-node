@@ -33,6 +33,9 @@ importers:
       '@eslint/markdown':
         specifier: ^6.6.0
         version: 6.6.0
+      '@telegraf/types':
+        specifier: ^8.3.1
+        version: 8.3.1
       '@tsconfig/node22':
         specifier: ^22.0.2
         version: 22.0.2
@@ -318,6 +321,9 @@ packages:
 
   '@telegraf/types@7.1.0':
     resolution: {integrity: sha512-kGevOIbpMcIlCDeorKGpwZmdH7kHbqlk/Yj6dEpJMKEQw5lk0KVQY0OLXaCswy8GqlIVLd5625OB+rAntP9xVw==}
+
+  '@telegraf/types@8.3.1':
+    resolution: {integrity: sha512-17RBlU04nwiERnrm6X32C/tr0/bYjXWAujS+zeK1C94pcnqetCk2IdqvfXLK9GluSMcyY6iMV5Kt0oAEZ7NF8w==}
 
   '@tsconfig/node22@22.0.2':
     resolution: {integrity: sha512-Kmwj4u8sDRDrMYRoN9FDEcXD8UpBSaPQQ24Gz+Gamqfm7xxn+GBR7ge/Z7pK8OXNGyUzbSwJj+TH6B+DS/epyA==}
@@ -1507,6 +1513,8 @@ snapshots:
   '@pkgr/core@0.2.7': {}
 
   '@telegraf/types@7.1.0': {}
+
+  '@telegraf/types@8.3.1': {}
 
   '@tsconfig/node22@22.0.2': {}
 

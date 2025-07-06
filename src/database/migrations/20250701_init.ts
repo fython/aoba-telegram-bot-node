@@ -24,6 +24,6 @@ export async function up(db: Kysely<AobaDatabase>): Promise<void> {
     .execute();
 }
 
-export async function down(): Promise<void> {
-  // No down migration needed
+export async function down(db: Kysely<AobaDatabase>): Promise<void> {
+  await db.schema.dropTable('yulu_record').execute();
 }

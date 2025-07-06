@@ -1,9 +1,15 @@
 import { message } from 'telegraf/filters';
+import { Update, Message } from 'telegraf/types';
 import { onBotInit } from '../registry';
 import { db } from '../database';
 import { NewRepeatMessage, NewRepeatCooldown } from '../database/models';
 import { createHash } from 'crypto';
 import { logger } from '../logger';
+import { NarrowedAobaContext } from '../context';
+
+type RepeatContext = NarrowedAobaContext<
+  Update.MessageUpdate<Message.TextMessage | Message.StickerMessage>
+>;
 
 // 配置常量
 const REPEAT_TIME_WINDOW = 2 * 60 * 1000; // 5分钟内的重复消息有效
@@ -20,12 +26,66 @@ function generateMessageHash(text: string): string {
 }
 
 /**
- * 计算复读概率
- * 2人复读: 50% 概率
- * 3人复读: 90% 概率
- * 4人及以上: 95% 概率
+ * 生成 Sticker 的哈希值
  */
-function calculateRepeatProbability(userCount: number): number {
+function generateStickerHash(fileUniqueId: string): string {
+  return createHash('sha256').update(`sticker:${fileUniqueId}`).digest('hex');
+}
+
+/**
+ * 消息类型定义
+ */
+type MessageInfo =
+  | {
+      type: 'text';
+      text: string;
+      hash: string;
+    }
+  | {
+      type: 'sticker';
+      fileId: string;
+      fileUniqueId: string;
+      hash: string;
+    };
+
+/**
+ * 从 Telegram 消息中提取消息信息
+ */
+function extractMessageInfo(ctx: RepeatContext): MessageInfo | null {
+  if (!ctx.message) {
+    return null;
+  }
+  if ((ctx.message as Message.TextMessage).text) {
+    const msg = ctx.message as Message.TextMessage;
+    const text = msg.text.trim();
+    if (isMessageSuitableForRepeat(text)) {
+      return {
+        type: 'text',
+        text,
+        hash: generateMessageHash(text),
+      };
+    }
+  } else if ((ctx.message as Message.StickerMessage).sticker) {
+    const msg = ctx.message as Message.StickerMessage;
+    return {
+      type: 'sticker',
+      fileId: msg.sticker.file_id,
+      fileUniqueId: msg.sticker.file_unique_id,
+      hash: generateStickerHash(msg.sticker.file_unique_id),
+    };
+  }
+  return null;
+}
+
+/**
+ * 计算复读概率
+ */
+function calculateRepeatProbability(feature: 'text' | 'sticker', userCount: number): number {
+  if (feature === 'sticker') {
+    if (userCount < 2) return 0;
+    if (userCount === 2) return 0.9;
+    return 1.0;
+  }
   if (userCount < 2) return 0;
   if (userCount === 2) return 0.5;
   if (userCount === 3) return 0.9;
@@ -35,27 +95,41 @@ function calculateRepeatProbability(userCount: number): number {
 /**
  * 检查消息是否在冷却期内
  */
-async function isInCooldown(chatId: number, messageText: string): Promise<boolean> {
+async function isInCooldown(chatId: number, messageInfo: MessageInfo): Promise<boolean> {
   const cooldownThreshold = new Date(Date.now() - COOLDOWN_TIME);
 
-  const result = await db
-    .selectFrom('repeat_cooldown')
-    .select('id')
-    .where('chat_id', '=', chatId)
-    .where('message_text', '=', messageText)
-    .where('created_at', '>', cooldownThreshold)
-    .executeTakeFirst();
-
-  return !!result;
+  if (messageInfo.type === 'text') {
+    const result = await db
+      .selectFrom('repeat_cooldown')
+      .select('id')
+      .where('chat_id', '=', chatId)
+      .where('message_type', '=', 'text')
+      .where('message_text', '=', messageInfo.text)
+      .where('created_at', '>', cooldownThreshold)
+      .executeTakeFirst();
+    return !!result;
+  } else {
+    const result = await db
+      .selectFrom('repeat_cooldown')
+      .select('id')
+      .where('chat_id', '=', chatId)
+      .where('message_type', '=', 'sticker')
+      .where('sticker_file_unique_id', '=', messageInfo.fileUniqueId)
+      .where('created_at', '>', cooldownThreshold)
+      .executeTakeFirst();
+    return !!result;
+  }
 }
 
 /**
  * 添加冷却记录
  */
-async function addCooldown(chatId: number, messageText: string): Promise<void> {
+async function addCooldown(chatId: number, messageInfo: MessageInfo): Promise<void> {
   const newCooldown: NewRepeatCooldown = {
     chat_id: chatId,
-    message_text: messageText,
+    message_type: messageInfo.type,
+    message_text: messageInfo.type === 'text' ? messageInfo.text : null,
+    sticker_file_unique_id: messageInfo.type === 'sticker' ? messageInfo.fileUniqueId : null,
   };
 
   await db.insertInto('repeat_cooldown').values(newCooldown).execute();
@@ -67,19 +141,21 @@ async function addCooldown(chatId: number, messageText: string): Promise<void> {
  */
 async function recordRepeatMessage(
   chatId: number,
-  messageText: string,
+  messageInfo: MessageInfo,
   userId: number
 ): Promise<number> {
-  const messageHash = generateMessageHash(messageText);
   const timeThreshold = new Date(Date.now() - REPEAT_TIME_WINDOW);
 
   try {
     // 尝试插入新记录，如果已存在则忽略（防止同一用户重复记录）
     const newMessage: NewRepeatMessage = {
       chat_id: chatId,
-      message_text: messageText,
-      message_hash: messageHash,
+      message_type: messageInfo.type,
+      message_text: messageInfo.type === 'text' ? messageInfo.text : null,
+      message_hash: messageInfo.hash,
       user_id: userId,
+      sticker_file_id: messageInfo.type === 'sticker' ? messageInfo.fileId : null,
+      sticker_file_unique_id: messageInfo.type === 'sticker' ? messageInfo.fileUniqueId : null,
     };
 
     await db.insertInto('repeat_message').values(newMessage).execute();
@@ -90,7 +166,7 @@ async function recordRepeatMessage(
   // 统计时间窗口内的不同用户数量
   logger.debug(
     'messageHash: %s, chatId: %d, timeThreshold: %s',
-    messageHash,
+    messageInfo.hash,
     chatId,
     timeThreshold.toISOString()
   );
@@ -98,7 +174,7 @@ async function recordRepeatMessage(
     .selectFrom('repeat_message')
     .select((eb) => eb.fn.countAll().as('user_count'))
     .where('chat_id', '=', chatId)
-    .where('message_hash', '=', messageHash)
+    .where('message_hash', '=', messageInfo.hash)
     .where('created_at', '>', timeThreshold)
     .executeTakeFirst();
   logger.debug('result: %o', result);
@@ -147,74 +223,84 @@ function isMessageSuitableForRepeat(text: string): boolean {
   return true;
 }
 
+/**
+ * 通用的消息处理逻辑，用于文本和贴纸
+ */
+async function handleRepeatableMessage(ctx: RepeatContext, next: () => Promise<void>) {
+  // 只处理群组消息
+  if (ctx.chat.type !== 'group' && ctx.chat.type !== 'supergroup') {
+    return next();
+  }
+
+  // 忽略机器人自己的消息
+  if (ctx.from.id === ctx.botInfo?.id) {
+    return next();
+  }
+
+  const messageInfo = extractMessageInfo(ctx);
+  if (!messageInfo) {
+    return next();
+  }
+
+  ctx.logger = ctx.logger.child({ feature: 'repeat' });
+
+  try {
+    const chatId = ctx.chat.id;
+
+    // 检查是否在冷却期内
+    if (await isInCooldown(chatId, messageInfo)) {
+      ctx.logger.debug('Message in cooldown, skipping repeat for: %s', messageInfo.type);
+      return next();
+    }
+
+    // 记录用户复读消息
+    const userCount = await recordRepeatMessage(chatId, messageInfo, ctx.from.id);
+
+    // 计算复读概率
+    const probability = calculateRepeatProbability(messageInfo.type, userCount);
+
+    const rand = Math.random();
+    ctx.logger.info(
+      'repeating users: %d, probability: %f, rand: %f, type: %s, hash: %s',
+      userCount,
+      probability,
+      rand,
+      messageInfo.type,
+      messageInfo.hash
+    );
+
+    if (probability > 0 && rand < probability) {
+      // 根据消息类型发送复读
+      if (messageInfo.type === 'text') {
+        await ctx.reply(messageInfo.text);
+      } else if (messageInfo.type === 'sticker') {
+        await ctx.replyWithSticker(messageInfo.fileId);
+      }
+
+      // 添加冷却记录
+      await addCooldown(chatId, messageInfo);
+    } else {
+      ctx.logger.debug(
+        'Not repeating message with %d users, probability: %f, type: %s',
+        userCount,
+        probability,
+        messageInfo.type
+      );
+    }
+  } catch (error) {
+    ctx.logger.error('Error in repeat feature: %o', error);
+  }
+
+  return next();
+}
+
 export const init = () =>
   onBotInit(async (bot) => {
     // 设置定期清理任务
     setInterval(cleanupExpiredRecords, CLEANUP_INTERVAL);
 
-    bot.on(message('text'), async (ctx, next) => {
-      // 只处理群组消息
-      if (ctx.chat.type !== 'group' && ctx.chat.type !== 'supergroup') {
-        return next();
-      }
-
-      // 忽略机器人自己的消息
-      if (ctx.from.id === bot.botInfo?.id) {
-        return next();
-      }
-
-      const text = ctx.text.trim();
-
-      // 检查消息是否适合复读
-      if (!isMessageSuitableForRepeat(text)) {
-        return next();
-      }
-
-      ctx.logger = ctx.logger.child({ feature: 'repeat' });
-
-      try {
-        const chatId = ctx.chat.id;
-
-        // 检查是否在冷却期内
-        if (await isInCooldown(chatId, text)) {
-          ctx.logger.debug('Message in cooldown, skipping repeat for: %s', text);
-          return next();
-        }
-
-        // 记录用户复读消息
-        const userCount = await recordRepeatMessage(chatId, text, ctx.from.id);
-
-        // 计算复读概率
-        const probability = calculateRepeatProbability(userCount);
-
-        const rand = Math.random();
-        ctx.logger.info(
-          'repeating users: %d, probability: %f, rand: %f, text: %s',
-          userCount,
-          probability,
-          rand,
-          text
-        );
-        if (probability > 0 && rand < probability) {
-          // 发送复读消息
-          await ctx.reply(text);
-
-          // 添加冷却记录
-          await addCooldown(chatId, text);
-        } else {
-          ctx.logger.debug(
-            'Not repeating message with %d users, probability: %f, text: %s',
-            userCount,
-            probability,
-            text
-          );
-        }
-      } catch (error) {
-        ctx.logger.error('Error in repeat feature: %o', error);
-      }
-
-      return next();
-    });
+    // 处理文本和贴纸消息
+    bot.on([message('text'), message('sticker')], handleRepeatableMessage);
   });
 
 // 检查是否启用复读机功能

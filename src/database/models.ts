@@ -19,16 +19,21 @@ export interface YuluRecordTable {
 export interface RepeatMessageTable {
   id: Generated<number>;
   chat_id: number;
-  message_text: string;
+  message_text: string | null;
   message_hash: string;
   user_id: number;
+  message_type: 'text' | 'sticker';
+  sticker_file_id: string | null;
+  sticker_file_unique_id: string | null;
   created_at: Generated<Date>;
 }
 
 export interface RepeatCooldownTable {
   id: Generated<number>;
   chat_id: number;
-  message_text: string;
+  message_text: string | null;
+  message_type: 'text' | 'sticker';
+  sticker_file_unique_id: string | null;
   created_at: Generated<Date>;
 }
 
