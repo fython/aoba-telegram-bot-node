@@ -14,6 +14,7 @@ import './features/userInteract';
 import './features/version';
 import './features/yulu';
 import './features/ids';
+import './features/stickers';
 
 function prepareMiddleware(ctx: AobaContext, next: () => Promise<void>): Promise<void> {
   if (ctx.from) {
@@ -36,6 +37,9 @@ async function main(): Promise<void> {
   bot.context.logger = logger;
   bot.botInfo = await bot.telegram.getMe();
   bot.use(prepareMiddleware);
+  bot.catch((err, ctx) => {
+    ctx.logger.error({ err }, 'Uncaught error: chat=%o from=%o', ctx.chat, ctx.from);
+  });
 
   await initializeBot(bot);
   // default inline query after initialization
