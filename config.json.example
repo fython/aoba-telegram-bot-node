@@ -1,0 +1,25 @@
+{
+  "features": {
+    "urlCleaner": {
+      "followRedirect": { "type": "all" },
+      "reserveRules": [
+        {
+          "urlMatch": "^http(s)?://www.bilibili.com/.*",
+          "reserveQueryKeys": ["t"]
+        }
+      ],
+      "autoCleanGroups": [
+        {
+          "chatId": "",
+          "urlMatches": [
+            "^http(s)?://www.bilibili.com/.*",
+            "^http(s)?://t.bilibili.com/.*",
+            "^http(s)?://www.youtube.com/.*",
+            "^http(s)?://youtu.be/.*",
+            "^http(s)?://b23.tv/.*"
+          ]
+        }
+      ]
+    }
+  }
+}

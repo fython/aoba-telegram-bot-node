@@ -12,10 +12,14 @@ services:
     environment:
       - NODE_ENV=production
       - AOBA_BOT_TOKEN=${AOBA_BOT_TOKEN}
+      - AOBA_CONFIG_PATH=${AOBA_CONFIG_PATH:-/app/config.json}
       - POSTGRES_HOST=postgres
       - POSTGRES_DB=aoba
       - POSTGRES_USER=aoba
       - POSTGRES_PASSWORD=aobabot2025
+    volumes:
+      - ./config.json:/app/config.json
+      - ./logs:/app/logs
     depends_on:
       - postgres
   postgres:
