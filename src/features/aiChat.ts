@@ -59,6 +59,12 @@ registerCommand({
   shortDesc: '使用 Perplexity AI 进行搜索/对话',
   longDesc: '使用 Perplexity AI 进行搜索或对话',
   handler: async (ctx) => {
+    const whitelistChats = ctx.config.features.aiChat?.whitlistChats;
+    if (!whitelistChats || !whitelistChats.includes(ctx.chat.id.toString())) {
+      ctx.logger.warn('Chat %s is not whitelisted for AI chat', ctx.chat.id);
+      await ctx.reply('此聊天不允许使用 AI 聊天功能');
+      return;
+    }
     if (!ctx.config.features.aiChat?.perplexityApiKey) {
       await ctx.reply('AI 聊天功能未启用或 Perplexity API 密钥未配置');
       return;
@@ -69,6 +75,10 @@ registerCommand({
       ctx.message?.text?.replace(/^\/pplx\s?/, '');
     if (!text) {
       await ctx.reply('请提供要查询的内容或回复一条消息进行对话');
+      return;
+    }
+    if (text.length > 200) {
+      await ctx.reply('查询内容过长，请限制在 200 个字符以内');
       return;
     }
     const api = new OpenAI({
@@ -126,6 +136,10 @@ export const init: BotInitFn = async (bot) => {
   bot.on(message('text'), async (ctx, next) => {
     const replyToMessage = ctx.message.reply_to_message;
     if (!replyToMessage) {
+      return next();
+    }
+    const whitelistChats = ctx.config.features.aiChat?.whitlistChats;
+    if (!whitelistChats || !whitelistChats.includes(ctx.chat.id.toString())) {
       return next();
     }
 
