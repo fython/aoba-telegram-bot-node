@@ -176,6 +176,15 @@ export const init: BotInitFn = async (bot) => {
     // 添加当前用户消息
     messages.push({ role: 'user', content: ctx.message.text });
 
+    // 控制消息深度，不要超过 5 次对话来回，如果超过了就引导用户使用官方 Perplexity 或 ChatGPT
+    if (messages.length > 10) {
+      await ctx.reply(
+        '对话过长，建议使用官方 [Perplexity](https://www.perplexity.ai/) 或 [ChatGPT](https://chat.openai.com/) 进行更深入的对话。',
+        { ...extraReplyToCurrent(ctx), parse_mode: 'Markdown' }
+      );
+      return;
+    }
+
     ctx.logger.debug('collected messages: %o', messages);
 
     const api = new OpenAI({
