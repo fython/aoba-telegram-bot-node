@@ -6,11 +6,53 @@ import {
 import { message } from 'telegraf/filters';
 import { Message } from 'telegraf/types';
 
+import { AobaContext } from '../context';
 import { AiChatMessage, NewAiChatMessage } from '../database/models';
 import { BotInitFn, onBotInit, registerCommand } from '../registry';
 import { extraReplyToCurrent } from '../utils';
 
 type AiMsgList = (ChatCompletionAssistantMessageParam | ChatCompletionUserMessageParam)[];
+
+async function handleStream(
+  ctx: AobaContext,
+  sentMessage: Message.TextMessage,
+  stream: AsyncIterable<OpenAI.Chat.Completions.ChatCompletionChunk>
+): Promise<string> {
+  let replyText = '';
+  let lastEdit = 0;
+  let accumulatedTokens = '';
+
+  for await (const chunk of stream) {
+    const content = chunk.choices[0]?.delta?.content || '';
+    if (content) {
+      accumulatedTokens += content;
+      replyText += content;
+    }
+
+    const now = Date.now();
+    if (accumulatedTokens && now - lastEdit > 1500) {
+      await ctx.telegram
+        .editMessageText(
+          sentMessage.chat.id,
+          sentMessage.message_id,
+          undefined,
+          replyText + '...',
+          { parse_mode: 'Markdown' }
+        )
+        .catch((e: Error) => ctx.logger.warn({ error: e }, 'edit message failed'));
+      lastEdit = now;
+      accumulatedTokens = '';
+    }
+  }
+
+  await ctx.telegram
+    .editMessageText(sentMessage.chat.id, sentMessage.message_id, undefined, replyText, {
+      parse_mode: 'Markdown',
+    })
+    .catch((e: Error) => ctx.logger.warn({ error: e }, 'final edit message failed'));
+
+  return replyText;
+}
 
 registerCommand({
   command: 'pplx',
@@ -35,20 +77,20 @@ registerCommand({
     });
     try {
       ctx.logger.debug('user message: %s', text);
-      const response = await api.chat.completions.create({
+      const sentMessage = await ctx.reply('AI 正在思考...', { ...extraReplyToCurrent(ctx) });
+      const stream = await api.chat.completions.create({
         model: 'sonar-pro',
         messages: [{ role: 'user', content: text }],
         max_tokens: 1000,
+        stream: true,
       });
-      const replyText = response.choices[0].message.content;
+
+      const replyText = await handleStream(ctx, sentMessage, stream);
+
       if (!replyText) {
         ctx.reply('AI 没有返回任何内容，请稍后再试。');
         return;
       }
-      const sentMessage = await ctx.reply(replyText, {
-        parse_mode: 'Markdown',
-        ...extraReplyToCurrent(ctx),
-      });
 
       if (!sentMessage.from) {
         ctx.logger.error('sentMessage.from is undefined');
@@ -128,20 +170,20 @@ export const init: BotInitFn = async (bot) => {
     });
 
     try {
-      const response = await api.chat.completions.create({
+      const sentMessage = await ctx.reply('AI 正在思考...', { ...extraReplyToCurrent(ctx) });
+      const stream = await api.chat.completions.create({
         model: 'sonar-pro',
         messages,
         max_tokens: 1000,
+        stream: true,
       });
-      const replyText = response.choices[0].message.content;
+
+      const replyText = await handleStream(ctx, sentMessage, stream);
+
       if (!replyText) {
         await ctx.reply('AI 没有返回任何内容，请稍后再试。');
         return;
       }
-      const sentMessage = await ctx.reply(replyText, {
-        parse_mode: 'Markdown',
-        ...extraReplyToCurrent(ctx),
-      });
 
       if (!sentMessage.from) {
         ctx.logger.error('sentMessage.from is undefined');
