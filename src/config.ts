@@ -9,6 +9,7 @@ export interface AobaConfigObj {
 
 export interface AobaConfigFeatures {
   urlCleaner?: AobaConfigUrlCleanerFeature;
+  aiChat?: AobaConfigAiChatFeature;
 }
 
 export interface AobaConfigUrlCleanerFeature {
@@ -21,6 +22,10 @@ export interface AobaConfigUrlCleanerFeature {
 export interface AobaConfigUrlCleanerAutoCleanGroups {
   chatId: string;
   urlMatches: string[];
+}
+
+export interface AobaConfigAiChatFeature {
+  perplexityApiKey?: string;
 }
 
 export async function readConfig(path: string): Promise<AobaConfigObj> {

@@ -4,16 +4,6 @@ import { Telegraf } from 'telegraf';
 import { readConfig } from './config';
 import { AobaContext, setupAobaContext } from './context';
 import { migrator } from './database';
-import './features/choose';
-import './features/help';
-import './features/ids';
-import './features/repeat';
-import './features/replace';
-import './features/stickers';
-import './features/urlCleaner';
-import './features/userInteract';
-import './features/version';
-import './features/yulu';
 import { formatUser } from './formatter/user';
 import { logger } from './logger';
 import { initializeBot } from './registry';
@@ -24,6 +14,22 @@ function prepareMiddleware(ctx: AobaContext, next: () => Promise<void>): Promise
     ctx.logger = logger.child({ user: formatUser(ctx.from) });
   }
   return next();
+}
+
+async function initFeatureImports(): Promise<void> {
+  await Promise.all([
+    import('./features/choose.js'),
+    import('./features/help.js'),
+    import('./features/ids.js'),
+    import('./features/repeat.js'),
+    import('./features/replace.js'),
+    import('./features/stickers.js'),
+    import('./features/urlCleaner.js'),
+    import('./features/userInteract.js'),
+    import('./features/version.js'),
+    import('./features/yulu.js'),
+    import('./features/aiChat.js'),
+  ]);
 }
 
 async function main(): Promise<void> {
@@ -74,6 +80,8 @@ async function main(): Promise<void> {
   });
 }
 
-main().catch((err) => {
-  logger.error({ err }, 'Caught an error while starting the bot');
-});
+initFeatureImports()
+  .then(main)
+  .catch((err) => {
+    logger.error({ err }, 'Caught an error while starting the bot');
+  });
