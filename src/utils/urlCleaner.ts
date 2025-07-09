@@ -185,3 +185,43 @@ export class UrlTrackCleaner {
     return url;
   }
 }
+
+/**
+ * 比较两个 URL 是否相似。
+ *
+ * 相似的定义为：主机名和路径相同，且查询参数相同（忽略顺序）。
+ * 如果两个 URL 的主机名和路径相同，但查询参数不同，则认为它们不相似。
+ * 如果两个 URL 的主机名和路径不同，则认为它们不相似。
+ * 此函数会移除 URL 的末尾斜杠，并比较主机名、路径和查询参数。
+ *
+ * @param url1 第一个 URL，可以是字符串或 URL 对象。
+ * @param url2 第二个 URL，可以是字符串或 URL 对象。
+ * @returns 如果两个 URL 相似，则返回 true，否则返回 false。
+ */
+export function isUrlSimilar(url1: string | URL, url2: string | URL): boolean {
+  const u1 = typeof url1 === 'string' ? new URL(url1) : url1;
+  const u2 = typeof url2 === 'string' ? new URL(url2) : url2;
+
+  const u1Href = u1.href.replace(/\/$/, ''); // 移除末尾斜杠
+  const u2Href = u2.href.replace(/\/$/, ''); // 移除末尾斜杠
+  if (u1Href === u2Href) {
+    return true;
+  }
+  // 比较主机名+路径相同的情况下，query 重排序后是否相同
+  // 先判断主机名+路径是否相同
+  if (u1.hostname !== u2.hostname || u1.pathname !== u2.pathname) {
+    return false;
+  }
+  // 比较 query 参数
+  const u1Query = new URLSearchParams(u1.search);
+  const u2Query = new URLSearchParams(u2.search);
+  if (u1Query.size !== u2Query.size) {
+    return false;
+  }
+  for (const [key, value] of u1Query.entries()) {
+    if (u2Query.get(key) !== value) {
+      return false;
+    }
+  }
+  return true;
+}

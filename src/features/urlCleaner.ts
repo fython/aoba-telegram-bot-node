@@ -2,6 +2,7 @@ import { Message } from 'telegraf/types';
 import { onBotInit, registerCommand } from '../registry';
 import { extraReplyToCurrent } from '../utils';
 import { message } from 'telegraf/filters';
+import { isUrlSimilar } from '../utils/urlCleaner';
 
 registerCommand({
   command: 'clean_url',
@@ -36,6 +37,11 @@ registerCommand({
 
     try {
       const cleanedUrl = await ctx.urlCleaner.cleanUrl(url);
+      if (isUrlSimilar(new URL(url), cleanedUrl)) {
+        ctx.logger.debug('No changes made to URL: %s', url);
+        await ctx.reply(`没有对 URL 进行任何更改: ${cleanedUrl.href}`, extraReplyToCurrent(ctx));
+        return;
+      }
       ctx.logger.info('before clean url: %s . after clean url: %s', url, cleanedUrl.href);
       await ctx.reply(`清理后的 URL: ${cleanedUrl.href}`, extraReplyToCurrent(ctx));
     } catch (err) {
@@ -74,7 +80,7 @@ onBotInit(async (bot) => {
         try {
           const cleanedUrl = await ctx.urlCleaner.cleanUrl(urlObj);
           ctx.logger.info('Auto-cleaned URL: %s -> %s', url, cleanedUrl.href);
-          if (cleanedUrl.href === urlObj.href) {
+          if (isUrlSimilar(urlObj, cleanedUrl)) {
             ctx.logger.debug('No changes made to URL: %s', url);
             return next();
           }

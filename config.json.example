@@ -6,6 +6,10 @@
         {
           "urlMatch": "^http(s)?://www.bilibili.com/.*",
           "reserveQueryKeys": ["t"]
+        },
+        {
+          "urlMatch": "^http(s)?://www.youtube.com/.*",
+          "reserveQueryKeys": ["v", "t", "list", "index"]
         }
       ],
       "autoCleanGroups": [
