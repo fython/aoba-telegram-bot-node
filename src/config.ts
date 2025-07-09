@@ -25,7 +25,7 @@ export interface AobaConfigUrlCleanerAutoCleanGroups {
 }
 
 export interface AobaConfigAiChatFeature {
-  whitlistChats?: string[];
+  whitelistChats?: string[];
   perplexityApiKey?: string;
 }
 

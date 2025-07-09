@@ -59,7 +59,7 @@ registerCommand({
   shortDesc: '使用 Perplexity AI 进行搜索/对话',
   longDesc: '使用 Perplexity AI 进行搜索或对话',
   handler: async (ctx) => {
-    const whitelistChats = ctx.config.features.aiChat?.whitlistChats;
+    const whitelistChats = ctx.config.features.aiChat?.whitelistChats;
     if (!whitelistChats || !whitelistChats.includes(ctx.chat.id.toString())) {
       ctx.logger.warn('Chat %s is not whitelisted for AI chat', ctx.chat.id);
       await ctx.reply('此聊天不允许使用 AI 聊天功能');
@@ -138,7 +138,7 @@ export const init: BotInitFn = async (bot) => {
     if (!replyToMessage) {
       return next();
     }
-    const whitelistChats = ctx.config.features.aiChat?.whitlistChats;
+    const whitelistChats = ctx.config.features.aiChat?.whitelistChats;
     if (!whitelistChats || !whitelistChats.includes(ctx.chat.id.toString())) {
       return next();
     }
