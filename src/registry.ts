@@ -1,5 +1,6 @@
 import { MiddlewareFn, NarrowedContext, Telegraf } from 'telegraf';
 import { Convenience as tt } from 'telegraf/types';
+
 import { AobaContext } from './context';
 
 export type BotInitFn = (bot: Telegraf<AobaContext>) => Promise<void>;

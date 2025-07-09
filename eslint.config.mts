@@ -1,9 +1,9 @@
 import js from '@eslint/js';
-import globals from 'globals';
-import tseslint from 'typescript-eslint';
 import markdown from '@eslint/markdown';
 import prettier from 'eslint-plugin-prettier/recommended';
 import { defineConfig } from 'eslint/config';
+import globals from 'globals';
+import tseslint from 'typescript-eslint';
 
 export default defineConfig([
   {

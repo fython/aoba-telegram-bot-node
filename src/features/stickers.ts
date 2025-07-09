@@ -1,10 +1,11 @@
-import { message } from 'telegraf/filters';
-import { onBotInit } from '../registry';
-import { extraReplyToCurrent } from '../utils';
-import { Message, Sticker, Update } from 'telegraf/types';
 import sharp from 'sharp';
 import { Telegraf } from 'telegraf';
+import { message } from 'telegraf/filters';
+import { Message, Sticker, Update } from 'telegraf/types';
+
 import { AobaContext, NarrowedAobaContext } from '../context';
+import { onBotInit } from '../registry';
+import { extraReplyToCurrent } from '../utils';
 
 async function downloadStickerAndReply(
   bot: Telegraf<AobaContext>,

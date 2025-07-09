@@ -1,6 +1,7 @@
+import { readFile } from 'fs/promises';
+
 import { logger } from './logger';
 import { RedirectPolicy, ReserveRule } from './utils/urlCleaner';
-import { readFile } from 'fs/promises';
 
 export interface AobaConfigObj {
   features: AobaConfigFeatures;

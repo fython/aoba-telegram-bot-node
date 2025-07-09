@@ -1,6 +1,7 @@
 import { Kysely, sql } from 'kysely';
-import { AobaDatabase } from '../models';
+
 import { logger } from '../../logger';
+import { AobaDatabase } from '../models';
 
 export async function up(db: Kysely<AobaDatabase>): Promise<void> {
   logger.info('executing migration: 20250703_repeat.ts');

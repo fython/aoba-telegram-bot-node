@@ -1,5 +1,6 @@
-import { AobaContext } from '../context';
 import { Convenience as tt } from 'telegraf/types';
+
+import { AobaContext } from '../context';
 
 export function extraReplyToCurrent(ctx: AobaContext): tt.ExtraReplyMessage {
   if (!ctx.message?.message_id) {

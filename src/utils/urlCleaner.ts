@@ -1,8 +1,8 @@
 /**
  * Refactor from https://github.com/fython/url-track-cleaner-rs
  */
-
 import { Logger } from 'pino';
+
 import { logger } from '../logger';
 
 export const DEFAULT_USER_AGENT =

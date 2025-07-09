@@ -1,7 +1,8 @@
 import { message } from 'telegraf/filters';
-import { onBotInit } from '../registry';
-import { userLink } from '../formatter/user';
 import { fmt } from 'telegraf/format';
+
+import { userLink } from '../formatter/user';
+import { onBotInit } from '../registry';
 
 export const init = () =>
   onBotInit(async (bot) => {

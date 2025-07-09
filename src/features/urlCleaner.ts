@@ -1,7 +1,8 @@
+import { message } from 'telegraf/filters';
 import { Message } from 'telegraf/types';
+
 import { onBotInit, registerCommand } from '../registry';
 import { extraReplyToCurrent } from '../utils';
-import { message } from 'telegraf/filters';
 import { isUrlSimilar } from '../utils/urlCleaner';
 
 registerCommand({

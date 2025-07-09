@@ -1,11 +1,12 @@
-import { message } from 'telegraf/filters';
-import { Update, Message } from 'telegraf/types';
-import { onBotInit } from '../registry';
-import { db } from '../database';
-import { NewRepeatMessage, NewRepeatCooldown } from '../database/models';
 import { createHash } from 'crypto';
-import { logger } from '../logger';
+import { message } from 'telegraf/filters';
+import { Message, Update } from 'telegraf/types';
+
 import { NarrowedAobaContext } from '../context';
+import { db } from '../database';
+import { NewRepeatCooldown, NewRepeatMessage } from '../database/models';
+import { logger } from '../logger';
+import { BotInitFn, onBotInit } from '../registry';
 
 type RepeatContext = NarrowedAobaContext<
   Update.MessageUpdate<Message.TextMessage | Message.StickerMessage>
@@ -294,16 +295,15 @@ async function handleRepeatableMessage(ctx: RepeatContext, next: () => Promise<v
   return next();
 }
 
-export const init = () =>
-  onBotInit(async (bot) => {
-    // 设置定期清理任务
-    setInterval(cleanupExpiredRecords, CLEANUP_INTERVAL);
+export const init: BotInitFn = async (bot) => {
+  // 设置定期清理任务
+  setInterval(cleanupExpiredRecords, CLEANUP_INTERVAL);
 
-    // 处理文本和贴纸消息
-    bot.on([message('text'), message('sticker')], handleRepeatableMessage);
-  });
+  // 处理文本和贴纸消息
+  bot.on([message('text'), message('sticker')], handleRepeatableMessage);
+};
 
 // 检查是否启用复读机功能
 if (process.env.AOBA_FEATURE_REPEAT_DISABLED !== '1') {
-  init();
+  onBotInit(init);
 }

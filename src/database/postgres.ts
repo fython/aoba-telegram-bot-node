@@ -1,5 +1,6 @@
-import { PostgresDialect, Kysely } from 'kysely';
+import { Kysely, PostgresDialect } from 'kysely';
 import { Pool } from 'pg';
+
 import { AobaDatabase } from './models';
 
 export const pg = new Pool({

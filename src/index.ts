@@ -1,22 +1,22 @@
 import 'dotenv/config';
 import { Telegraf } from 'telegraf';
-import { AobaContext, setupAobaContext } from './context';
-import { initializeBot } from './registry';
-import { logger } from './logger';
-import { formatUser } from './formatter/user';
-import { migrator } from './database';
-import { readConfig } from './config';
 
+import { readConfig } from './config';
+import { AobaContext, setupAobaContext } from './context';
+import { migrator } from './database';
 import './features/choose';
 import './features/help';
+import './features/ids';
 import './features/repeat';
 import './features/replace';
+import './features/stickers';
+import './features/urlCleaner';
 import './features/userInteract';
 import './features/version';
 import './features/yulu';
-import './features/ids';
-import './features/stickers';
-import './features/urlCleaner';
+import { formatUser } from './formatter/user';
+import { logger } from './logger';
+import { initializeBot } from './registry';
 
 function prepareMiddleware(ctx: AobaContext, next: () => Promise<void>): Promise<void> {
   if (ctx.from) {

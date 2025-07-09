@@ -1,6 +1,7 @@
 import { Message } from 'telegraf/types';
-import { registerCommand } from '../registry';
+
 import { formatUser } from '../formatter/user';
+import { registerCommand } from '../registry';
 
 registerCommand({
   command: 'replace',

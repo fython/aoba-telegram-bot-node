@@ -1,9 +1,10 @@
-import { CallbackQuery, InlineQueryResult, Message } from 'telegraf/types';
-import { registerCommand, registerInlineQueryHandler, onBotInit } from '../registry';
-import { db } from '../database';
 import { sql } from 'kysely';
 import { callbackQuery } from 'telegraf/filters';
 import { code, fmt } from 'telegraf/format';
+import { CallbackQuery, InlineQueryResult, Message } from 'telegraf/types';
+
+import { db } from '../database';
+import { onBotInit, registerCommand, registerInlineQueryHandler } from '../registry';
 import { extraReplyToCurrent } from '../utils';
 
 registerInlineQueryHandler(async (ctx, next) => {

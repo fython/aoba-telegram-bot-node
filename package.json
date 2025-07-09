@@ -15,11 +15,12 @@
   ],
   "author": "Siubeng <fython@163.com>",
   "license": "MIT",
-  "packageManager": "pnpm@10.11.0",
+  "packageManager": "pnpm@10.12.4",
   "devDependencies": {
     "@eslint/js": "^9.30.0",
     "@eslint/markdown": "^6.6.0",
     "@telegraf/types": "^8.3.1",
+    "@trivago/prettier-plugin-sort-imports": "^5.2.2",
     "@tsconfig/node22": "^22.0.2",
     "@types/node": "^22.15.34",
     "@types/pg": "^8.15.4",

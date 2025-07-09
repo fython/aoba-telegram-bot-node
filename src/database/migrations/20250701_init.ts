@@ -1,4 +1,5 @@
 import { Kysely, sql } from 'kysely';
+
 import { AobaDatabase } from '..';
 
 export async function up(db: Kysely<AobaDatabase>): Promise<void> {
