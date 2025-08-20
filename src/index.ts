@@ -29,6 +29,7 @@ async function initFeatureImports(): Promise<void> {
     import('./features/version.js'),
     import('./features/yulu.js'),
     import('./features/aiChat.js'),
+    import('./features/batchMention.js'),
   ]);
 }
 

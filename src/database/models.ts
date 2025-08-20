@@ -4,6 +4,7 @@ export interface AobaDatabase {
   yulu_record: YuluRecordTable;
   repeat_message: RepeatMessageTable;
   repeat_cooldown: RepeatCooldownTable;
+  member_tag: MemberTagTable;
   ai_chat_messages: AiChatMessagesTable;
 }
 
@@ -38,6 +39,14 @@ export interface RepeatCooldownTable {
   created_at: Generated<Date>;
 }
 
+export interface MemberTagTable {
+  id: Generated<number>;
+  chat_id: number;
+  user_id: number;
+  tag: string;
+  created_at: Generated<Date>;
+}
+
 export interface AiChatMessagesTable {
   id: Generated<number>;
   chat_id: number;
@@ -55,6 +64,8 @@ export type RepeatMessage = Selectable<RepeatMessageTable>;
 export type NewRepeatMessage = Insertable<RepeatMessageTable>;
 export type RepeatCooldown = Selectable<RepeatCooldownTable>;
 export type NewRepeatCooldown = Insertable<RepeatCooldownTable>;
+export type MemberTag = Selectable<MemberTagTable>;
+export type NewMemberTag = Insertable<MemberTagTable>;
 export type AiChatMessage = Selectable<AiChatMessagesTable>;
 export type NewAiChatMessage = Insertable<AiChatMessagesTable>;
 export type AiChatMessageUpdate = Updateable<AiChatMessagesTable>;
