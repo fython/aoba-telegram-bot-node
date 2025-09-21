@@ -44,12 +44,7 @@ registerCommand({
         return;
       }
       ctx.logger.info('before clean url: %s . after clean url: %s', url, cleanedUrl.href);
-      await ctx.reply(`清理后的 URL: ${cleanedUrl.href}`, {
-        ...extraReplyToCurrent(ctx),
-        link_preview_options: {
-          is_disabled: true,
-        },
-      });
+      await ctx.reply(`清理后的 URL: ${cleanedUrl.href}`, extraReplyToCurrent(ctx));
     } catch (err) {
       ctx.logger.error({ err }, '清理 URL 时发生错误');
       await ctx.reply(`清理 URL 时发生错误: ${err}`);
@@ -90,7 +85,13 @@ onBotInit(async (bot) => {
             ctx.logger.debug('No changes made to URL: %s', url);
             return next();
           }
-          await ctx.reply(`自动清理后的 URL: ${cleanedUrl.href}`, extraReplyToCurrent(ctx));
+          await ctx.reply(`自动清理后的 URL: ${cleanedUrl.href}`, {
+            ...extraReplyToCurrent(ctx),
+            link_preview_options: {
+              is_disabled: true,
+              url: cleanedUrl.href,
+            },
+          });
         } catch (err) {
           ctx.logger.error({ err }, '自动清理 URL 时发生错误');
           await ctx.reply(`自动清理 URL 时发生错误: ${err}`);
